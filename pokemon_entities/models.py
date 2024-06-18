@@ -9,6 +9,11 @@ class Pokemon(models.Model):
     #     if self.title and not self.image.name:
     #         self.image.name = f'{self.title}.png'
     #     super().save(*args, **kwargs)
-
     def __str__(self):
         return f'{self.title}'
+class PokemonEntity(models.Model):
+    lat = models.FloatField()
+    lon = models.FloatField()
+
+    def __str__(self):
+        return f'{self.lat}, {self.lon}'
