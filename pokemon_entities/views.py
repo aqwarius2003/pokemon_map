@@ -1,3 +1,4 @@
+from django.conf import settings
 import folium
 import json
 
@@ -16,18 +17,21 @@ DEFAULT_IMAGE_URL = (
 )
 logger = logging.getLogger(__name__)
 
+
 def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
     try:
-        icon = folium.features.CustomIcon(
-            image_url,
-            icon_size=(50, 50),
-        )
-        folium.Marker(
-            [lat, lon],
-            # Warning! `tooltip` attribute is disabled intentionally
-            # to fix strange folium cyrillic encoding bug
-            icon=icon,
-        ).add_to(folium_map)
+        if image_url:
+            full_image_url = image_url
+            icon = folium.features.CustomIcon(
+                full_image_url,
+                icon_size=(50, 50),
+            )
+            folium.Marker(
+                [lat, lon],
+                # Warning! `tooltip` attribute is disabled intentionally
+                # to fix strange folium cyrillic encoding bug
+                icon=icon,
+            ).add_to(folium_map)
     except Exception as e:
         logger.error(f"Ошибка в добавлении покемона: {e}")
 
@@ -41,15 +45,15 @@ def show_all_pokemons(request):
 
         folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
-        #проверка путей
         for pokemon_entity in pokemon_entities:
-            print(pokemon_entity.pokemon.image)
-
-        for pokemon_entity in pokemon_entities:
+            image_url = None
+            if pokemon_entity.pokemon.image:
+                image_url = pokemon_entity.pokemon.image.url
+            full_image_url = request.build_absolute_uri(image_url) if image_url else DEFAULT_IMAGE_URL
             add_pokemon(
                 folium_map,
                 pokemon_entity.lat, pokemon_entity.lon,
-                pokemon_entity.pokemon.image.url if pokemon_entity.pokemon.image else None
+                full_image_url
             )
 
         pokemons_on_page = []
@@ -66,8 +70,7 @@ def show_all_pokemons(request):
         })
     except Exception as e:
         logger.error(f"Ошибка в show_all_pokemons: {e}")
-        raise # Поднимаем ошибку, чтобы Django могла обработать её
-
+        raise  # Поднимаем ошибку, чтобы Django могла обработать её
 
 
 def show_pokemon(request, pokemon_id):
@@ -96,4 +99,3 @@ def show_pokemon(request, pokemon_id):
     except Exception as e:
         logger.error(f"Ошибка в show_pokemon: {e}")
         raise  # Поднимаем ошибку, чтобы Django могла обработать её
-
