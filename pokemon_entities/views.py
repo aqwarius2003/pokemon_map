@@ -7,6 +7,7 @@ from django.shortcuts import render
 
 from .models import Pokemon, PokemonEntity
 import logging
+from django.utils.timezone import localtime
 
 
 MOSCOW_CENTER = [55.751244, 37.618423]
@@ -21,9 +22,8 @@ logger = logging.getLogger(__name__)
 def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
     try:
         if image_url:
-            full_image_url = image_url
             icon = folium.features.CustomIcon(
-                full_image_url,
+                image_url,
                 icon_size=(50, 50),
             )
             folium.Marker(
@@ -33,15 +33,16 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
                 icon=icon,
             ).add_to(folium_map)
     except Exception as e:
-        logger.error(f"Ошибка в добавлении покемона: {e}")
+        logger.error(f"Ошибка в добавлении покемона в функции add_pokemon: {e}")
 
 
 def show_all_pokemons(request):
-    # with open('pokemon_entities/pokemons.json', encoding='utf-8') as database:
-    #     pokemons = json.load(database)['pokemons']
     try:
+        current_time = localtime()
+
         pokemons = Pokemon.objects.all()
-        pokemon_entities = PokemonEntity.objects.all()
+        # pokemon_entities = PokemonEntity.objects.all()
+        pokemon_entities = PokemonEntity.objects.filter(appeared_at__lte=current_time, disappeared_at__gte=current_time)
 
         folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
