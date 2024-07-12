@@ -94,9 +94,9 @@ def show_pokemon(request, pokemon_id):
         'pokemon_id': requested_pokemon.id,
         'img_url': get_full_image_url(requested_pokemon, request),
         'title_ru': requested_pokemon.title,
-        # 'title_en': requested_pokemon.title_en,
-        # 'title_jp': requested_pokemon.title_jp,
-        # 'description': requested_pokemon.description,
+        'title_en': requested_pokemon.title_en,
+        'title_jp': requested_pokemon.title_jp,
+        'description': requested_pokemon.description,
     }
 
     return render(request, 'pokemon.html', context={
