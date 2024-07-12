@@ -108,6 +108,8 @@ def show_pokemon(request, pokemon_id):
         }
 
     next_evolution_pokemon = requested_pokemon.next_evolutions.first()
+    # next_evolution_pokemon = requested_pokemon.next_evolutions.all()[1]
+    print(next_evolution_pokemon)
     if next_evolution_pokemon:
         pokemon['next_evolution'] = {
             'pokemon_id': next_evolution_pokemon.id,
