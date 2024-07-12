@@ -12,6 +12,12 @@ class Pokemon(models.Model):
     image = models.ImageField(upload_to='pokemon', blank=True, null=True, verbose_name='Картинка покемона')
     description = models.TextField(blank=True,
                                    verbose_name='Описание')
+    previous_evolution = models.ForeignKey('self',
+                                           null=True,
+                                           blank=True,
+                                           on_delete=models.SET_NULL,
+                                           related_name='next_evolutions',
+                                           verbose_name='Из кого превратился')
 
 
     def __str__(self):
