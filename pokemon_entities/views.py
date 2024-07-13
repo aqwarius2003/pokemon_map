@@ -1,4 +1,3 @@
-from django.conf import settings
 import folium
 
 from django.http import HttpResponseNotFound
@@ -42,15 +41,12 @@ def get_full_image_url(pokemon, request):
 
 def show_all_pokemons(request):
     try:
+        folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
         current_time = localtime()
-
         pokemons = Pokemon.objects.all()
         pokemon_entities = PokemonEntity.objects.filter(appeared_at__lte=current_time, disappeared_at__gte=current_time)
 
-        folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-
         for pokemon_entity in pokemon_entities:
-            # image_url = None
             add_pokemon(
                 folium_map,
                 pokemon_entity.lat, pokemon_entity.lon,
@@ -71,7 +67,7 @@ def show_all_pokemons(request):
         })
     except Exception as e:
         logger.error(f"Ошибка в show_all_pokemons: {e}")
-        raise  # Поднимаем ошибку, чтобы Django могла обработать её
+        raise
 
 
 def show_pokemon(request, pokemon_id):
@@ -120,4 +116,3 @@ def show_pokemon(request, pokemon_id):
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(), 'pokemon': pokemon
     })
-
