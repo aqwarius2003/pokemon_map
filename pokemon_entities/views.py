@@ -2,6 +2,7 @@ import folium
 
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 
 from .models import Pokemon, PokemonEntity
 import logging
@@ -34,16 +35,18 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 
 def get_full_image_url(pokemon, request):
-    return request.build_absolute_uri(pokemon.image.url) \
-        if pokemon.image \
+    return (
+        request.build_absolute_uri(pokemon.image.url)
+        if pokemon.image
         else request.build_absolute_uri(DEFAULT_IMAGE_URL)
+    )
 
 
 def show_all_pokemons(request):
     try:
         folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
         current_time = localtime()
-        pokemons = Pokemon.objects.all()
+
         pokemon_entities = PokemonEntity.objects.filter(appeared_at__lte=current_time, disappeared_at__gte=current_time)
 
         for pokemon_entity in pokemon_entities:
@@ -53,11 +56,12 @@ def show_all_pokemons(request):
                 get_full_image_url(pokemon_entity.pokemon, request)
             )
 
+        pokemons = Pokemon.objects.all()
         pokemons_on_page = []
         for pokemon in pokemons:
             pokemons_on_page.append({
                 'pokemon_id': pokemon.id,
-                'img_url': pokemon.image.url if pokemon.image else None,
+                'img_url': get_full_image_url(pokemon, request),
                 'title_ru': pokemon.title,
             })
 
@@ -71,10 +75,7 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    try:
-        requested_pokemon = Pokemon.objects.get(id=pokemon_id)
-    except Pokemon.DoesNotExist:
-        return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
+    requested_pokemon = get_object_or_404(Pokemon, id=pokemon_id)
 
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     pokemon_entities = PokemonEntity.objects.filter(pokemon=requested_pokemon)
@@ -104,8 +105,6 @@ def show_pokemon(request, pokemon_id):
         }
 
     next_evolution_pokemon = requested_pokemon.next_evolutions.first()
-    # next_evolution_pokemon = requested_pokemon.next_evolutions.all()[1]
-    print(next_evolution_pokemon)
     if next_evolution_pokemon:
         pokemon['next_evolution'] = {
             'pokemon_id': next_evolution_pokemon.id,
