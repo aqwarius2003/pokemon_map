@@ -20,7 +20,6 @@ class Pokemon(models.Model):
                                            related_name='next_evolutions',
                                            verbose_name='Из кого превратился')
 
-
     def __str__(self):
         return self.title
 
